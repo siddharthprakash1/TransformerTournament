@@ -127,3 +127,20 @@ cp .env.example .env
 # Edit .env with your API keys
 ```
 
+## 📂 Project Structure
+```mermaid
+graph TD
+    A[neural_nexus] --> B[game_engine.py]
+    A --> C[battle_ui.py]
+    A --> D[agents]
+    A --> E[tournament.py]
+    A --> F[utils.py]
+    A --> G[demo.py]
+    A --> H[main.py]
+    
+    D --> I[base_agent.py]
+    D --> J[random_agent.py]
+    D --> K[smart_random.py]
+    D --> L[groq_agent.py]
+    D --> M[google_agent.py]
+```
