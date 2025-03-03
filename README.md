@@ -196,6 +196,8 @@ sequenceDiagram
     G->>G: Determine winner
     G->>TM: Return results
     TM->>TM: Update statistics
+
+```
 ### Tournament Statistics Tracked
 
 | Metric | Description | Significance |
