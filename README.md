@@ -159,10 +159,15 @@ sequenceDiagram
     participant G as Game
     participant A1 as Agent 1
     participant A2 as Agent 2
-    
+
+    style TM fill:#ff7e67,stroke:#333,stroke-width:2px,color:#000
+    style G fill:#00b8a9,stroke:#333,stroke-width:2px,color:#000
+    style A1 fill:#8ac4ff,stroke:#333,stroke-width:2px,color:#000
+    style A2 fill:#f1e189,stroke:#333,stroke-width:2px,color:#000
+
     TM->>G: Create new game
     G->>G: Initialize board
-    
+
     loop Until game over
         G->>G: Get valid moves
         alt Valid moves available
@@ -172,10 +177,10 @@ sequenceDiagram
         else No valid moves
             G->>G: Skip turn
         end
-        
+
         G->>G: Check game end
         G->>G: Switch players
-        
+
         G->>G: Get valid moves
         alt Valid moves available
             G->>A2: Request move
@@ -184,20 +189,13 @@ sequenceDiagram
         else No valid moves
             G->>G: Skip turn
         end
-        
+
         G->>G: Check game end
     end
-    
+
     G->>G: Determine winner
     G->>TM: Return results
     TM->>TM: Update statistics
-    
-    style TM fill:#ff7e67,stroke:#333,stroke-width:2px,color:#000
-    style G fill:#00b8a9,stroke:#333,stroke-width:2px,color:#000
-    style A1 fill:#8ac4ff,stroke:#333,stroke-width:2px,color:#000
-    style A2 fill:#f1e189,stroke:#333,stroke-width:2px,color:#000
-```
-
 ### Tournament Statistics Tracked
 
 | Metric | Description | Significance |
