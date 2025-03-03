@@ -556,19 +556,10 @@ def calculate_elo_change(winner_rating, loser_rating, K=32):
     return winner_change, loser_change
 ```
 
-### Future Research Directions
-
-Our ongoing research focuses on several exciting directions:
-
-1. **Prompt Optimization**: Automated prompt evolution using genetic algorithms
-2. **Multi-model Cooperation**: Having multiple LLMs collaborate as a single player
-3. **Self-play Improvement**: Using game results to refine prompt strategies
-4. **Strategic Analysis**: Identifying and categorizing distinct playing styles
-5. **Cross-domain Transfer**: Testing if game-playing ability correlates with performance on other spatial reasoning tasks
 
 ### Community Contributions
 
-We welcome contributions in several areas:
+I welcome contributions in several areas:
 
 1. **New Agent Implementations**: Integrate additional LLM APIs
 2. **UI Enhancements**: Improve visualization and animation
@@ -580,14 +571,6 @@ We welcome contributions in several areas:
 
 If you use Neural Nexus in academic research, please cite our project:
 
-```
-@software{neural_nexus_2025,
-  author = {Your Name},
-  title = {Neural Nexus: A Framework for LLM Strategy Games},
-  year = {2025},
-  url = {https://github.com/yourusername/neural-nexus}
-}
-```
 
 ## 🔗 Related Work
 
