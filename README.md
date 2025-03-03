@@ -160,11 +160,7 @@ sequenceDiagram
     participant A1 as Agent 1
     participant A2 as Agent 2
 
-    style TM fill:#ff7e67,stroke:#333,stroke-width:2px,color:#000
-    style G fill:#00b8a9,stroke:#333,stroke-width:2px,color:#000
-    style A1 fill:#8ac4ff,stroke:#333,stroke-width:2px,color:#000
-    style A2 fill:#f1e189,stroke:#333,stroke-width:2px,color:#000
-
+    %% Corrected styles
     TM->>G: Create new game
     G->>G: Initialize board
 
