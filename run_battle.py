@@ -122,7 +122,7 @@ def create_agent(agent_type: str, name: Optional[str] = None, args=None) -> Base
         Instantiated agent
     """
     if agent_type == "groq":
-        default_name = "Groq Claude"
+        default_name = "Groq llama"
         agent_name = name or default_name
         return GroqAgent(
             name=agent_name,
