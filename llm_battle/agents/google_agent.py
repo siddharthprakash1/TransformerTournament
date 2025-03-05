@@ -6,6 +6,8 @@ import os
 import json
 import asyncio
 import httpx
+import random
+import time
 from typing import Dict, List, Tuple, Any, Optional
 import numpy as np
 from .base_agent import BaseAgent
@@ -14,10 +16,14 @@ from .base_agent import BaseAgent
 class GoogleAgent(BaseAgent):
     """Agent that uses Google Gemini API to make decisions."""
 
+    # Class-level variable to track last game completion time
+    last_game_completion = 0
+    cooldown_period = 30  # 30 seconds cooldown between games
+
     def __init__(
         self,
         name: str = "Google Gemini",
-        model: str = "gemini-1.5-pro",
+        model: str = "gemini-2.0-flash-thinking-exp-01-21",  # Updated model
         api_key: Optional[str] = None,
         temperature: float = 0.2,
         max_retries: int = 3
@@ -26,7 +32,7 @@ class GoogleAgent(BaseAgent):
 
         Args:
             name: The display name of the agent
-            model: The model to use (e.g., "gemini-1.5-pro")
+            model: The model to use (e.g., "gemini-2.0-flash-thinking-exp-01-21")
             api_key: Google API key (if None, will try to get from env)
             temperature: Temperature for generation (0.0 to 1.0)
             max_retries: Maximum number of retries on API failure
@@ -40,6 +46,8 @@ class GoogleAgent(BaseAgent):
         self.temperature = temperature
         self.max_retries = max_retries
         self.move_history = []  # Track move history for better context
+        self.last_api_call = 0  # Track last API call time
+        self.first_move_of_game = True  # Track if this is the first move of a game
 
     async def get_move(self, board_state: Dict[str, Any]) -> Tuple[int, int]:
         """Get the next move from Google Gemini.
@@ -56,6 +64,23 @@ class GoogleAgent(BaseAgent):
         player1_count = board_state["player1_count"]
         player2_count = board_state["player2_count"]
 
+        # Check if this is a new game and enforce cooldown if needed
+        current_time = time.time()
+        if self.first_move_of_game:
+            time_since_last_game = current_time - GoogleAgent.last_game_completion
+            if time_since_last_game < GoogleAgent.cooldown_period:
+                cooldown_needed = GoogleAgent.cooldown_period - time_since_last_game
+                print(f"Cooling down between games: waiting {cooldown_needed:.2f}s")
+                await asyncio.sleep(cooldown_needed)
+            self.first_move_of_game = False
+
+        # Check if this is the last move of the game
+        empty_cells = sum(row.count(0) for row in board)
+        if empty_cells <= 1:
+            # Update the class-level last game completion time
+            GoogleAgent.last_game_completion = time.time()
+            self.first_move_of_game = True
+
         if not valid_moves:
             raise ValueError("No valid moves available")
 
@@ -65,7 +90,22 @@ class GoogleAgent(BaseAgent):
         # Get response from Google API
         for attempt in range(self.max_retries):
             try:
+                # Add more aggressive delay to avoid resource exhaustion
+                current_time = asyncio.get_event_loop().time()
+                time_since_last_call = current_time - self.last_api_call
+
+                # Increased base delay with exponential backoff
+                base_delay = 8.0  # Increased from 2 seconds
+                current_delay = base_delay * (2 ** attempt)  # Exponential backoff
+
+                if time_since_last_call < current_delay:
+                    wait_time = current_delay - time_since_last_call
+                    print(f"API rate limiting: waiting {wait_time:.2f}s before next call")
+                    await asyncio.sleep(wait_time)
+
                 response = await self._call_google_api(prompt)
+                self.last_api_call = asyncio.get_event_loop().time()
+
                 move = self._parse_response(response, valid_moves)
 
                 # Record this move in history
@@ -84,10 +124,53 @@ class GoogleAgent(BaseAgent):
                 return move
             except Exception as e:
                 if attempt == self.max_retries - 1:
-                    # If we've exhausted retries, fall back to a random move
+                    # If we've exhausted retries, select the best strategic move
                     print(f"Error getting move from Google after {self.max_retries} attempts: {e}")
-                    return valid_moves[0]  # Just use the first valid move as fallback
-                await asyncio.sleep(1)  # Wait before retrying
+                    return self._get_best_strategic_move(board, valid_moves, current_player)
+
+                # Add increasing delay between retries with much stronger backoff
+                backoff_time = 15 * (2 ** attempt) + random.uniform(0, 5)  # Much stronger backoff
+                print(f"API call failed, waiting {backoff_time:.2f}s before retry {attempt+1}/{self.max_retries}")
+                await asyncio.sleep(backoff_time)
+
+    def _get_best_strategic_move(self, board, valid_moves, current_player):
+        """Get the best strategic move based on heuristics when API fails."""
+        # Initialize score for each move
+        move_scores = {}
+
+        for r, c in valid_moves:
+            score = 0
+
+            # 1. Prioritize corners (highest value)
+            if (r, c) in [(0, 0), (0, 7), (7, 0), (7, 7)]:
+                score += 100
+
+            # 2. Avoid cells adjacent to corners (they give opponent access to corners)
+            elif (r, c) in [(0, 1), (1, 0), (1, 1), (0, 6), (1, 6), (1, 7),
+                           (6, 0), (6, 1), (7, 1), (6, 6), (6, 7), (7, 6)]:
+                score -= 50
+
+            # 3. Edges are good
+            elif r == 0 or r == 7 or c == 0 or c == 7:
+                score += 30
+
+            # 4. Count captures (important factor)
+            captures = self._count_potential_captures(board, r, c, current_player)
+            score += captures * 20
+
+            # 5. Control center in early game
+            empty_count = sum(row.count(0) for row in board)
+            if empty_count > 40:  # Early game
+                center_distance = abs(r - 3.5) + abs(c - 3.5)
+                if center_distance < 2:
+                    score += 15
+
+            move_scores[(r, c)] = score
+
+        # Return move with highest score, or random if tied
+        best_score = max(move_scores.values())
+        best_moves = [move for move, score in move_scores.items() if score == best_score]
+        return random.choice(best_moves)
 
     def _create_prompt(
         self,
@@ -122,12 +205,29 @@ class GoogleAgent(BaseAgent):
                     board_str += "O "  # Player 2
             board_str += "\n"
 
-        # Format valid moves with potential impact analysis
+        # Format valid moves with potential impact analysis and enhanced strategic analysis
         valid_moves_analysis = []
         for r, c in valid_moves:
             # Count how many pieces would be captured by this move
             captures = self._count_potential_captures(board, r, c, current_player)
-            valid_moves_analysis.append(f"({r}, {c}) - would capture {captures} pieces")
+
+            # Position analysis
+            position_notes = []
+            if (r, c) in [(0, 0), (0, 7), (7, 0), (7, 7)]:
+                position_notes.append("CORNER (excellent strategic position)")
+            elif r == 0 or r == 7 or c == 0 or c == 7:
+                position_notes.append("EDGE (good strategic position)")
+            elif (r, c) in [(0, 1), (1, 0), (1, 1), (0, 6), (1, 6), (1, 7),
+                           (6, 0), (6, 1), (7, 1), (6, 6), (6, 7), (7, 6)]:
+                position_notes.append("NEXT TO CORNER (risky, could give opponent access to corner)")
+
+            center_distance = abs(r - 3.5) + abs(c - 3.5)
+            if center_distance <= 1:
+                position_notes.append("CENTER (good for early control)")
+
+            position_analysis = ", ".join(position_notes) if position_notes else ""
+
+            valid_moves_analysis.append(f"({r}, {c}) - would capture {captures} pieces {position_analysis}")
 
         valid_moves_str = "\n".join(valid_moves_analysis)
 
@@ -142,7 +242,37 @@ class GoogleAgent(BaseAgent):
                 p2_count = move_data["player2_count"]
                 move_history_str += f"{i+1}. Player {player} ({'X' if player == 1 else 'O'}) placed at ({r}, {c}). Score after: X:{p1_count}, O:{p2_count}\n"
 
-        # Create the enhanced prompt
+        # Determine game phase for strategic guidance
+        total_pieces = player1_count + player2_count
+        empty_spaces = 64 - total_pieces
+
+        if total_pieces < 20:
+            phase = "OPENING PHASE"
+            strategy_tips = """
+- Control the center of the board
+- Avoid placing pieces next to corners (they give your opponent access to corners)
+- Build a solid foundation for mid-game
+- Focus on mobility rather than maximizing immediate captures
+"""
+        elif empty_spaces < 15:
+            phase = "ENDGAME PHASE"
+            strategy_tips = """
+- Focus on maximizing piece count
+- Secure corners and edges
+- Look for moves that lead to multiple captures
+- Consider how the board will be filled by the end of the game
+"""
+        else:
+            phase = "MIDGAME PHASE"
+            strategy_tips = """
+- Balance between position and captures
+- Limit your opponent's mobility
+- Secure corners when possible
+- Build strong edge formations
+- Avoid giving away corner access
+"""
+
+        # Create the enhanced prompt with improved strategic guidance
         prompt = f"""You are playing a strategic board game similar to Othello/Reversi with the following rules:
 
 GAME RULES:
@@ -164,23 +294,27 @@ Board (X=player1, O=player2, ·=empty):
 
 You are player {current_player} ({'X' if current_player == 1 else 'O'}).
 Current score: Player 1 (X): {player1_count}, Player 2 (O): {player2_count}
+Game phase: {phase}
 
 {move_history_str}
 
 VALID MOVES (with capture analysis):
 {valid_moves_str}
 
-STRATEGY TIPS:
-- Capturing more pieces is generally good
-- Control the center of the board when possible
-- Try to block your opponent from making high-capture moves
-- Think ahead about how your move sets up future positions
+ADVANCED STRATEGY TIPS:
+{strategy_tips}
+
+SPECIAL POSITIONS:
+- CORNERS (0,0), (0,7), (7,0), (7,7): Most valuable positions, should be prioritized
+- EDGES: Second most valuable, hard for opponent to capture
+- NEAR CORNERS: Avoid placing pieces adjacent to empty corners, as they give opponent access to corners
+- CENTER CONTROL: Important in early game to establish position
 
 INSTRUCTIONS:
 1. Analyze the board carefully
-2. Choose the move that maximizes your advantage
+2. Choose the move that maximizes your long-term advantage
 3. Return ONLY a JSON object with your chosen move, like this:
-{{"row": 3, "col": 4, "reasoning": "This move captures 2 pieces and controls the center"}}
+{{"row": 3, "col": 4, "reasoning": "This move captures 2 pieces and controls an important strategic position"}}
 
 Your move:"""
 
@@ -289,30 +423,23 @@ Your move:"""
                 if move in valid_moves:
                     return move
 
-            # If all else fails, return the move with the most captures
-            best_move = valid_moves[0]
-            max_captures = -1
-
-            for move in valid_moves:
-                r, c = move
-                captures = self._count_potential_captures(
-                    np.array(self.move_history[-1]["board_state"]) if self.move_history else np.zeros((8, 8)),
-                    r, c,
-                    self.move_history[-1]["player"] if self.move_history else 1
-                )
-
-                if captures > max_captures:
-                    max_captures = captures
-                    best_move = move
-
-            return best_move
+            # If all else fails, use strategic fallback
+            return self._get_best_strategic_move(
+                np.array(self.move_history[-1]["board_state"]) if self.move_history else np.zeros((8, 8)),
+                valid_moves,
+                self.move_history[-1]["player"] if self.move_history else 1
+            )
 
         except Exception as e:
             print(f"Error parsing LLM response: {e}")
             print(f"Response was: {response}")
 
-            # Choose the move with the most captures as fallback
+            # Choose a strategic move as fallback
             if valid_moves:
-                return valid_moves[0]
+                return self._get_best_strategic_move(
+                    np.array(self.move_history[-1]["board_state"]) if self.move_history else np.zeros((8, 8)),
+                    valid_moves,
+                    self.move_history[-1]["player"] if self.move_history else 1
+                )
             else:
                 raise ValueError("No valid moves available")

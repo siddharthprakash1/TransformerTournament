@@ -10,39 +10,39 @@ from typing import Optional, Tuple, List, Dict, Any
 # Initialize pygame
 pygame.init()
 
-# Constants - ADJUSTED FOR BETTER SPACING
-SCREEN_WIDTH, SCREEN_HEIGHT = 900, 750  # Taller screen for more space
-BOARD_SIZE = 550  # Slightly smaller board
+# Constants - EXPANDED FOR BETTER SPACING
+SCREEN_WIDTH, SCREEN_HEIGHT = 1200, 900  # Much larger screen for better spacing
+BOARD_SIZE = 600  # Slightly larger board for better visibility
 GRID_SIZE = 8
 CELL_SIZE = BOARD_SIZE // GRID_SIZE
 FPS = 60
-BOARD_MARGIN_TOP = 100  # More space at top
+BOARD_MARGIN_TOP = 180  # Much more space at top
 BOARD_MARGIN_LEFT = (SCREEN_WIDTH - BOARD_SIZE) // 2  # Center horizontally
 
-# Modern Vibrant Colors
-BG_COLOR = (15, 15, 25)  # Darker background
+# Modern Vibrant Colors with better contrast
+BG_COLOR = (12, 12, 20)  # Darker background
 ACCENT_COLOR = (255, 75, 145)  # Hot pink
 SECONDARY_ACCENT = (0, 195, 255)  # Bright cyan
 TERTIARY_ACCENT = (130, 255, 100)  # Neon green
 PLAYER1_COLOR = (255, 70, 120)  # Vibrant pink
 PLAYER2_COLOR = (30, 200, 255)  # Electric blue
 GRID_COLOR = (50, 50, 70)  # Subtle grid
-GRID_HIGHLIGHT = (70, 70, 100)  # Highlighted grid cells
+GRID_HIGHLIGHT = (80, 80, 120)  # More visible highlighted grid cells
 UI_TEXT = (240, 240, 255)  # Bright text
-UI_BG = (30, 30, 40, 180)  # Semi-transparent UI background
+UI_BG = (30, 30, 45, 200)  # More opaque UI background for better readability
 
 # Try to load modern fonts
 try:
     FONT_FAMILY = "Arial"
-    FONT_LARGE = pygame.font.SysFont(FONT_FAMILY, 48, bold=True)
-    FONT_MEDIUM = pygame.font.SysFont(FONT_FAMILY, 32, bold=True)
-    FONT_SMALL = pygame.font.SysFont(FONT_FAMILY, 24)
-    FONT_EMOJI = pygame.font.SysFont("Arial", 36)
+    FONT_LARGE = pygame.font.SysFont(FONT_FAMILY, 56, bold=True)
+    FONT_MEDIUM = pygame.font.SysFont(FONT_FAMILY, 36, bold=True)
+    FONT_SMALL = pygame.font.SysFont(FONT_FAMILY, 28)
+    FONT_EMOJI = pygame.font.SysFont("Arial", 42)
 except:
-    FONT_LARGE = pygame.font.Font(None, 48)
-    FONT_MEDIUM = pygame.font.Font(None, 32)
-    FONT_SMALL = pygame.font.Font(None, 24)
-    FONT_EMOJI = pygame.font.Font(None, 36)
+    FONT_LARGE = pygame.font.Font(None, 56)
+    FONT_MEDIUM = pygame.font.Font(None, 36)
+    FONT_SMALL = pygame.font.Font(None, 28)
+    FONT_EMOJI = pygame.font.Font(None, 42)
 
 # Initialize screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -98,7 +98,7 @@ class Message:
         self.duration = duration
         self.age = 0
         self.y = SCREEN_HEIGHT + 50
-        self.target_y = SCREEN_HEIGHT - 120  # Lower position
+        self.target_y = SCREEN_HEIGHT - 150  # Lower position for better visibility
 
     def update(self):
         self.age += 1
@@ -120,7 +120,7 @@ class Message:
         text_rect = text_surf.get_rect(center=(SCREEN_WIDTH//2, self.y))
 
         # Create background
-        padding = 25  # More padding
+        padding = 30  # More padding for better spacing
         bg_rect = pygame.Rect(
             text_rect.left - padding,
             text_rect.top - padding//2,
@@ -128,15 +128,19 @@ class Message:
             text_rect.height + padding
         )
 
-        # Draw rounded background
+        # Draw rounded background with more pronounced shadow
+        shadow_rect = bg_rect.copy()
+        shadow_rect.x += 4
+        shadow_rect.y += 4
+        pygame.draw.rect(screen, (0, 0, 0, 100), shadow_rect, border_radius=20)
         pygame.draw.rect(screen, UI_BG, bg_rect, border_radius=20)
 
-        # Draw accent border
+        # Draw accent border with thicker line
         pygame.draw.rect(
             screen,
             PLAYER1_COLOR if current_player == 1 else PLAYER2_COLOR,
             bg_rect,
-            width=2,
+            width=3,
             border_radius=20
         )
 
@@ -150,13 +154,13 @@ class Particle:
         self.y = y
         self.color = color
         self.style = style
-        self.size = random.randint(3, 8)
-        self.speed_x = random.uniform(-3, 3)
-        self.speed_y = random.uniform(-3, 3)
-        self.life = random.randint(30, 60)
+        self.size = random.randint(4, 10)  # Larger particles
+        self.speed_x = random.uniform(-3.5, 3.5)  # Faster movement
+        self.speed_y = random.uniform(-3.5, 3.5)
+        self.life = random.randint(40, 80)  # Longer life
         self.max_life = self.life
         self.rotation = random.randint(0, 360)
-        self.rot_speed = random.uniform(-5, 5)
+        self.rot_speed = random.uniform(-6, 6)  # Faster rotation
 
     def update(self):
         self.x += self.speed_x
@@ -213,13 +217,13 @@ class Animation:
         progress_ratio = self.progress / self.max_progress
 
         if self.type == "place":
-            # Growing circle animation with glow
+            # Growing circle animation with enhanced glow
             radius = int(CELL_SIZE // 2.5 * min(1, progress_ratio * 1.2))
 
-            # Glow effect
-            for i in range(3):
-                glow_size = radius + 5 + i*2
-                glow_alpha = 100 - i*30
+            # Glow effect with more layers
+            for i in range(4):  # More glow layers
+                glow_size = radius + 6 + i*3  # Larger glow
+                glow_alpha = 120 - i*25  # More visible glow
                 glow_color = (*self.color[:3], glow_alpha)
                 glow_surf = pygame.Surface((glow_size*2, glow_size*2), pygame.SRCALPHA)
                 pygame.draw.circle(glow_surf, glow_color, (glow_size, glow_size), glow_size)
@@ -232,16 +236,16 @@ class Animation:
             if radius > 5:
                 highlight_pos = (x - radius//3, y - radius//3)
                 highlight_size = radius // 2
-                pygame.draw.circle(screen, (255, 255, 255, 150), highlight_pos, highlight_size)
+                pygame.draw.circle(screen, (255, 255, 255, 180), highlight_pos, highlight_size)
 
         elif self.type == "capture":
-            # Shrinking circle with glow
+            # Shrinking circle with enhanced glow
             reverse_progress = 1.0 - progress_ratio
             radius = int(CELL_SIZE // 2.5 * reverse_progress)
 
             # Glow effect that expands
-            glow_size = int(CELL_SIZE // 2.5 + progress_ratio * 10)
-            glow_alpha = int(100 * (1 - progress_ratio))
+            glow_size = int(CELL_SIZE // 2.5 + progress_ratio * 15)  # Larger expansion
+            glow_alpha = int(120 * (1 - progress_ratio))  # More visible
             glow_color = (*self.color[:3], glow_alpha)
             glow_surf = pygame.Surface((glow_size*2, glow_size*2), pygame.SRCALPHA)
             pygame.draw.circle(glow_surf, glow_color, (glow_size, glow_size), glow_size)
@@ -251,7 +255,7 @@ class Animation:
             pygame.draw.circle(screen, self.color, (x, y), radius)
 
 
-def create_particles(x, y, color, count=25, styles=None):
+def create_particles(x, y, color, count=30, styles=None):  # More particles
     if styles is None:
         styles = ["circle", "square", "triangle"]
 
@@ -262,61 +266,67 @@ def create_particles(x, y, color, count=25, styles=None):
 
 def draw_board_background():
     """Draw the modern game board background."""
-    # Main board with gradient
-    surf = pygame.Surface((BOARD_SIZE + 20, BOARD_SIZE + 20), pygame.SRCALPHA)
+    # Main board with enhanced gradient
+    surf = pygame.Surface((BOARD_SIZE + 30, BOARD_SIZE + 30), pygame.SRCALPHA)  # Larger surface
 
-    # Create gradient background
-    for i in range(BOARD_SIZE + 20):
-        # Calculate gradient color
-        ratio = i / (BOARD_SIZE + 20)
-        r = int(35 + ratio * 20)
-        g = int(35 + ratio * 20)
-        b = int(50 + ratio * 15)
+    # Create gradient background with more contrast
+    for i in range(BOARD_SIZE + 30):
+        # Calculate gradient color with more vibrance
+        ratio = i / (BOARD_SIZE + 30)
+        r = int(35 + ratio * 25)
+        g = int(35 + ratio * 25)
+        b = int(55 + ratio * 20)
         color = (r, g, b, 255)
 
         # Draw horizontal line with calculated color
-        pygame.draw.line(surf, color, (0, i), (BOARD_SIZE + 20, i))
+        pygame.draw.line(surf, color, (0, i), (BOARD_SIZE + 30, i))
 
     # Add rounded corners and border
     pygame.draw.rect(
         surf,
         (0, 0, 0, 0),
-        (0, 0, BOARD_SIZE + 20, BOARD_SIZE + 20),
-        border_radius=20
+        (0, 0, BOARD_SIZE + 30, BOARD_SIZE + 30),
+        border_radius=25  # More rounded corners
     )
 
-    # Draw border with player color
+    # Draw border with player color and thicker line
     border_color = PLAYER1_COLOR if current_player == 1 else PLAYER2_COLOR
     pygame.draw.rect(
         surf,
         border_color,
-        (0, 0, BOARD_SIZE + 20, BOARD_SIZE + 20),
-        width=3,
-        border_radius=20
+        (0, 0, BOARD_SIZE + 30, BOARD_SIZE + 30),
+        width=4,  # Thicker border
+        border_radius=25
     )
 
-    # Add subtle glow along the border
-    glow_surf = pygame.Surface((BOARD_SIZE + 40, BOARD_SIZE + 40), pygame.SRCALPHA)
-    for i in range(10):
-        glow_alpha = 15 - i * 1.5
+    # Add enhanced glow along the border
+    glow_surf = pygame.Surface((BOARD_SIZE + 60, BOARD_SIZE + 60), pygame.SRCALPHA)  # Larger glow
+    for i in range(15):  # More glow layers
+        glow_alpha = 18 - i * 1.2  # More visible glow
         glow_color = (*border_color[:3], glow_alpha)
         pygame.draw.rect(
             glow_surf,
             glow_color,
-            (i, i, BOARD_SIZE + 40 - i*2, BOARD_SIZE + 40 - i*2),
+            (i, i, BOARD_SIZE + 60 - i*2, BOARD_SIZE + 60 - i*2),
             width=1,
-            border_radius=20 + i
+            border_radius=25 + i
         )
 
+    # Add shadow for depth
+    shadow_surf = pygame.Surface((BOARD_SIZE + 30, BOARD_SIZE + 30), pygame.SRCALPHA)
+    shadow_rect = pygame.Rect(5, 5, BOARD_SIZE + 30, BOARD_SIZE + 30)
+    pygame.draw.rect(shadow_surf, (0, 0, 0, 60), shadow_rect, border_radius=25)
+
     # Blit the surfaces to the screen
-    screen.blit(glow_surf, (BOARD_MARGIN_LEFT - 20, BOARD_MARGIN_TOP - 20))
-    screen.blit(surf, (BOARD_MARGIN_LEFT - 10, BOARD_MARGIN_TOP - 10))
+    screen.blit(shadow_surf, (BOARD_MARGIN_LEFT - 15, BOARD_MARGIN_TOP - 15))
+    screen.blit(glow_surf, (BOARD_MARGIN_LEFT - 30, BOARD_MARGIN_TOP - 30))
+    screen.blit(surf, (BOARD_MARGIN_LEFT - 15, BOARD_MARGIN_TOP - 15))
 
 
 def draw_grid():
     """Draw the grid lines on the board with a modern look."""
     for i in range(GRID_SIZE + 1):
-        # Choose color - highlight every other line
+        # Choose color - highlight every other line with more contrast
         color = GRID_HIGHLIGHT if i % 2 == 0 else GRID_COLOR
 
         # Vertical lines
@@ -339,7 +349,7 @@ def draw_grid():
 
 
 def draw_pieces():
-    """Draw the pieces on the board with modern styling."""
+    """Draw the pieces on the board with enhanced modern styling."""
     for row in range(GRID_SIZE):
         for col in range(GRID_SIZE):
             if board[row, col] != 0:
@@ -347,26 +357,26 @@ def draw_pieces():
                 y = BOARD_MARGIN_TOP + row * CELL_SIZE + CELL_SIZE // 2
                 color = PLAYER1_COLOR if board[row, col] == 1 else PLAYER2_COLOR
 
-                # Glow effect
-                for i in range(3):
-                    glow_size = CELL_SIZE // 2.5 + 2 + i*2
-                    glow_alpha = 80 - i*25
+                # Enhanced glow effect
+                for i in range(4):  # More glow layers
+                    glow_size = CELL_SIZE // 2.5 + 3 + i*2.5  # Larger glow
+                    glow_alpha = 90 - i*20  # More visible
                     glow_color = (*color[:3], glow_alpha)
                     glow_surf = pygame.Surface((glow_size*2, glow_size*2), pygame.SRCALPHA)
                     pygame.draw.circle(glow_surf, glow_color, (glow_size, glow_size), glow_size)
                     screen.blit(glow_surf, (x-glow_size, y-glow_size))
 
-                # Main piece
-                pygame.draw.circle(screen, color, (x, y), CELL_SIZE // 2.5)
+                # Main piece with slightly larger size
+                pygame.draw.circle(screen, color, (x, y), CELL_SIZE // 2.3)  # Slightly larger
 
-                # Highlight/shine effect
-                highlight_pos = (x - CELL_SIZE//8, y - CELL_SIZE//8)
-                highlight_size = CELL_SIZE // 5
-                pygame.draw.circle(screen, (255, 255, 255, 150), highlight_pos, highlight_size)
+                # Enhanced highlight/shine effect
+                highlight_pos = (x - CELL_SIZE//7, y - CELL_SIZE//7)
+                highlight_size = CELL_SIZE // 4.5  # Larger highlight
+                pygame.draw.circle(screen, (255, 255, 255, 180), highlight_pos, highlight_size)
 
 
 def draw_thinking_indicator():
-    """Draw an indicator when an LLM is thinking."""
+    """Draw an enhanced indicator when an LLM is thinking."""
     if llm_thinking:
         # Calculate elapsed time and update dots animation
         elapsed = time.time() - thinking_start_time
@@ -378,98 +388,118 @@ def draw_thinking_indicator():
         dots = "." * thinking_dots
         thinking_text = f"{llm_names[current_player]} thinking{dots}"
         
-        # Render text with pulsing effect
+        # Render text with enhanced pulsing effect
         pulse = (math.sin(elapsed * 4) + 1) / 2  # 0 to 1 pulsing
         alpha = int(180 + pulse * 75)  # 180-255 alpha
         color = PLAYER1_COLOR if current_player == 1 else PLAYER2_COLOR
         text_color = (*color[:3], alpha)
         
         text_surf = FONT_MEDIUM.render(thinking_text, True, text_color)
-        text_rect = text_surf.get_rect(center=(SCREEN_WIDTH//2, BOARD_MARGIN_TOP - 40))
+        text_rect = text_surf.get_rect(center=(SCREEN_WIDTH//2, BOARD_MARGIN_TOP - 60))  # More space
         
-        # Draw with subtle glow
-        glow_surf = pygame.Surface((text_rect.width + 20, text_rect.height + 20), pygame.SRCALPHA)
-        glow_color = (*color[:3], 40 + int(pulse * 30))
-        pygame.draw.rect(glow_surf, glow_color, (0, 0, text_rect.width + 20, text_rect.height + 20), 
-                         border_radius=15)
-        screen.blit(glow_surf, (text_rect.x - 10, text_rect.y - 10))
+        # Draw with enhanced glow effect
+        glow_surf = pygame.Surface((text_rect.width + 40, text_rect.height + 30), pygame.SRCALPHA)  # Larger glow
+        glow_color = (*color[:3], 50 + int(pulse * 40))  # More visible
+        pygame.draw.rect(glow_surf, glow_color, (0, 0, text_rect.width + 40, text_rect.height + 30), 
+                         border_radius=20)  # More rounded
+        screen.blit(glow_surf, (text_rect.x - 20, text_rect.y - 15))
         screen.blit(text_surf, text_rect)
 
 
 def draw_ui():
-    """Draw the modern UI elements."""
+    """Draw the modern UI elements with improved spacing."""
     # IMPROVED SPACING FOR TOP UI
     player1_count, player2_count = count_pieces()
 
-    # Top UI container for better alignment
-    top_ui_margin = 25  # Space from top of screen
-    pill_width = 200  # Wider for LLM names
-    pill_height = 60
-    spacing = 30  # Space between elements
+    # Top UI container with much more space
+    top_ui_margin = 40  # More space from top of screen
+    pill_width = 250  # Wider for LLM names
+    pill_height = 70  # Taller for better visibility
+    spacing = 50  # More space between elements
 
     # Calculate positions to center all elements
     total_width = (pill_width * 3) + (spacing * 2)
     left_start = (SCREEN_WIDTH - total_width) // 2
 
-    # Player 1 pill
+    # Player 1 pill with shadow for depth
+    shadow_rect = pygame.Rect(left_start + 4, top_ui_margin + 4, pill_width, pill_height)
+    pygame.draw.rect(screen, (0, 0, 0, 60), shadow_rect, border_radius=35)
+    
     p1_rect = pygame.Rect(left_start, top_ui_margin, pill_width, pill_height)
-    pygame.draw.rect(screen, UI_BG, p1_rect, border_radius=30)
+    pygame.draw.rect(screen, UI_BG, p1_rect, border_radius=35)
     pygame.draw.rect(
         screen,
         PLAYER1_COLOR,
         p1_rect,
-        width=3 if current_player == 1 else 1,
-        border_radius=30
+        width=4 if current_player == 1 else 2,  # Thicker border for current player
+        border_radius=35
     )
 
-    # Player 1 avatar/circle
-    pygame.draw.circle(screen, PLAYER1_COLOR, (left_start + 35, top_ui_margin + pill_height//2), 20)
+    # Player 1 avatar/circle with larger size
+    pygame.draw.circle(screen, PLAYER1_COLOR, (left_start + 45, top_ui_margin + pill_height//2), 25)
 
-    # Player 1 text
+    # Player 1 text with better positioning
     p1_text = FONT_MEDIUM.render(f"{llm_names[1]}: {player1_count}", True, UI_TEXT)
-    screen.blit(p1_text, (left_start + 60, top_ui_margin + 15))
+    screen.blit(p1_text, (left_start + 80, top_ui_margin + pill_height//2 - p1_text.get_height()//2))
 
-    # Turn indicator - center
+    # Turn indicator - center with shadow
     turn_x = left_start + pill_width + spacing
+    shadow_rect = pygame.Rect(turn_x + 4, top_ui_margin + 4, pill_width, pill_height)
+    pygame.draw.rect(screen, (0, 0, 0, 60), shadow_rect, border_radius=35)
+    
     turn_rect = pygame.Rect(turn_x, top_ui_margin, pill_width, pill_height)
-    pygame.draw.rect(screen, UI_BG, turn_rect, border_radius=30)
+    pygame.draw.rect(screen, UI_BG, turn_rect, border_radius=35)
     turn_color = PLAYER1_COLOR if current_player == 1 else PLAYER2_COLOR
-    pygame.draw.rect(screen, turn_color, turn_rect, width=3, border_radius=30)
+    pygame.draw.rect(screen, turn_color, turn_rect, width=4, border_radius=35)  # Thicker border
 
-    # Turn text
+    # Turn text with better centering
     turn_text = FONT_MEDIUM.render(f"GAME {current_game}/{total_games}", True, UI_TEXT)
     turn_text_rect = turn_text.get_rect(center=(turn_x + pill_width//2, top_ui_margin + pill_height//2))
     screen.blit(turn_text, turn_text_rect)
 
-    # Player 2 pill
-    p2_rect = pygame.Rect(turn_x + pill_width + spacing, top_ui_margin, pill_width, pill_height)
-    pygame.draw.rect(screen, UI_BG, p2_rect, border_radius=30)
+    # Player 2 pill with shadow
+    p2_x = turn_x + pill_width + spacing
+    shadow_rect = pygame.Rect(p2_x + 4, top_ui_margin + 4, pill_width, pill_height)
+    pygame.draw.rect(screen, (0, 0, 0, 60), shadow_rect, border_radius=35)
+    
+    p2_rect = pygame.Rect(p2_x, top_ui_margin, pill_width, pill_height)
+    pygame.draw.rect(screen, UI_BG, p2_rect, border_radius=35)
     pygame.draw.rect(
         screen,
         PLAYER2_COLOR,
         p2_rect,
-        width=3 if current_player == 2 else 1,
-        border_radius=30
+        width=4 if current_player == 2 else 2,  # Thicker border for current player
+        border_radius=35
     )
 
-    # Player 2 avatar/circle
-    pygame.draw.circle(screen, PLAYER2_COLOR, (turn_x + pill_width + spacing + 35, top_ui_margin + pill_height//2), 20)
+    # Player 2 avatar/circle with larger size
+    pygame.draw.circle(screen, PLAYER2_COLOR, (p2_x + 45, top_ui_margin + pill_height//2), 25)
 
-    # Player 2 text
+    # Player 2 text with better positioning
     p2_text = FONT_MEDIUM.render(f"{llm_names[2]}: {player2_count}", True, UI_TEXT)
-    screen.blit(p2_text, (turn_x + pill_width + spacing + 60, top_ui_margin + 15))
+    screen.blit(p2_text, (p2_x + 80, top_ui_margin + pill_height//2 - p2_text.get_height()//2))
 
-    # Bottom status bar with proper spacing
-    bottom_y = BOARD_MARGIN_TOP + BOARD_SIZE + 25
+    # Bottom status bar with much more spacing
+    bottom_y = BOARD_MARGIN_TOP + BOARD_SIZE + 40  # More space below board
+    
+    # Add shadow for depth
+    shadow_rect = pygame.Rect(
+        BOARD_MARGIN_LEFT + 4,
+        bottom_y + 4,
+        BOARD_SIZE,
+        60  # Taller for better visibility
+    )
+    pygame.draw.rect(screen, (0, 0, 0, 60), shadow_rect, border_radius=30)
+    
     bottom_rect = pygame.Rect(
         BOARD_MARGIN_LEFT,
         bottom_y,
         BOARD_SIZE,
-        50
+        60
     )
-    pygame.draw.rect(screen, UI_BG, bottom_rect, border_radius=25)
+    pygame.draw.rect(screen, UI_BG, bottom_rect, border_radius=30)
 
-    # Game status message
+    # Game status message with larger font
     if not game_over:
         status_text = FONT_MEDIUM.render(
             f"{llm_names[current_player]}'s Turn",
@@ -487,49 +517,68 @@ def draw_ui():
         else:
             status_text = FONT_MEDIUM.render("TIE GAME! 🤝", True, UI_TEXT)
 
-    status_rect = status_text.get_rect(center=(SCREEN_WIDTH//2, bottom_y + 25))
+    status_rect = status_text.get_rect(center=(SCREEN_WIDTH//2, bottom_y + 30))
     screen.blit(status_text, status_rect)
 
-    # Draw battle stats
-    stats_y = bottom_y + 70
+    # Draw battle stats with more space and shadow
+    stats_y = bottom_y + 80  # More space between elements
+    
+    # Add shadow
+    shadow_rect = pygame.Rect(
+        BOARD_MARGIN_LEFT + 4,
+        stats_y + 4,
+        BOARD_SIZE,
+        60  # Taller
+    )
+    pygame.draw.rect(screen, (0, 0, 0, 60), shadow_rect, border_radius=30)
+    
     stats_rect = pygame.Rect(
         BOARD_MARGIN_LEFT,
         stats_y,
         BOARD_SIZE,
-        50
+        60
     )
-    pygame.draw.rect(screen, UI_BG, stats_rect, border_radius=25)
+    pygame.draw.rect(screen, UI_BG, stats_rect, border_radius=30)
     
+    # More detailed stats with better formatting
     stats_text = FONT_SMALL.render(
         f"Battle Stats: {llm_names[1]} {battle_stats['wins'][1]} - {battle_stats['wins'][2]} {llm_names[2]} (Ties: {battle_stats['ties']})",
         True,
         UI_TEXT
     )
-    stats_rect = stats_text.get_rect(center=(SCREEN_WIDTH//2, stats_y + 25))
+    stats_rect = stats_text.get_rect(center=(SCREEN_WIDTH//2, stats_y + 30))
     screen.blit(stats_text, stats_rect)
-
-    # Game over overlay
+# Game over overlay with improved design
     if game_over:
-        # Semi-transparent overlay
+        # Semi-transparent overlay with gradient
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 150))
+        for y in range(SCREEN_HEIGHT):
+            alpha = min(180, int(180 * (y / SCREEN_HEIGHT * 1.5)))
+            pygame.draw.line(overlay, (0, 0, 0, alpha), (0, y), (SCREEN_WIDTH, y))
         screen.blit(overlay, (0, 0))
 
-        # Main game over container
-        go_width, go_height = 450, 300  # Larger container
+        # Main game over container with larger size
+        go_width, go_height = 550, 400  # Much larger container
         go_rect = pygame.Rect(
             (SCREEN_WIDTH - go_width)//2,
             (SCREEN_HEIGHT - go_height)//2,
             go_width,
             go_height
         )
-        pygame.draw.rect(screen, UI_BG, go_rect, border_radius=25)
 
-        # Border with winner color or neutral
+        # Add shadow for depth
+        shadow_rect = go_rect.copy()
+        shadow_rect.x += 8
+        shadow_rect.y += 8
+        pygame.draw.rect(screen, (0, 0, 0, 100), shadow_rect, border_radius=35)
+
+        pygame.draw.rect(screen, UI_BG, go_rect, border_radius=35)
+
+        # Border with winner color or neutral and thicker line
         border_color = PLAYER1_COLOR if winner == 1 else PLAYER2_COLOR if winner == 2 else UI_TEXT
-        pygame.draw.rect(screen, border_color, go_rect, width=4, border_radius=25)
+        pygame.draw.rect(screen, border_color, go_rect, width=5, border_radius=35)  # Thicker border
 
-        # Game over text with more spacing
+        # Game over text with much more spacing
         if winner:
             win_color = PLAYER1_COLOR if winner == 1 else PLAYER2_COLOR
             win_emoji = "🏆"
@@ -543,37 +592,74 @@ def draw_ui():
             go_text1 = FONT_LARGE.render("🤝 GAME OVER 🤝", True, UI_TEXT)
             go_text2 = FONT_LARGE.render("IT'S A TIE!", True, UI_TEXT)
 
-        # Position text with better spacing
-        go_text1_rect = go_text1.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 70))
-        go_text2_rect = go_text2.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 10))
+        # Position text with much better spacing
+        go_text1_rect = go_text1.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 100))
+        go_text2_rect = go_text2.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 30))
         screen.blit(go_text1, go_text1_rect)
         screen.blit(go_text2, go_text2_rect)
 
-        # Final scores
+        # Final scores with larger font
         score_text = FONT_MEDIUM.render(f"{llm_names[1]}: {player1_count} • {llm_names[2]}: {player2_count}", True, UI_TEXT)
         score_rect = score_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 50))
         screen.blit(score_text, score_rect)
 
-        # Auto-restart countdown or button
+        # Auto-restart countdown or button with better styling
         if auto_restart:
             time_left = max(0, auto_restart_delay - (time.time() - game_end_time))
             restart_text = FONT_MEDIUM.render(f"Next game in {time_left:.1f}s", True, TERTIARY_ACCENT)
-            restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 120))
+            restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 140))
             screen.blit(restart_text, restart_rect)
         else:
-            # Restart button with better positioning
+            # Restart button with enhanced styling
             restart_rect = pygame.Rect(
-                (SCREEN_WIDTH - 220)//2,
-                (SCREEN_HEIGHT)//2 + 110,
-                220,
-                60
+                (SCREEN_WIDTH - 280)//2,  # Wider button
+                (SCREEN_HEIGHT)//2 + 130,
+                280,
+                70  # Taller button
             )
-            pygame.draw.rect(screen, (40, 40, 60), restart_rect, border_radius=30)
-            pygame.draw.rect(screen, TERTIARY_ACCENT, restart_rect, width=3, border_radius=30)
 
-            restart_text = FONT_MEDIUM.render("Next Battle", True, UI_TEXT)
-            restart_rect2 = restart_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 140))
+            # Add button shadow for depth
+            shadow_rect = restart_rect.copy()
+            shadow_rect.x += 4
+            shadow_rect.y += 4
+            pygame.draw.rect(screen, (0, 0, 0, 80), shadow_rect, border_radius=35)
+
+            # Button background with gradient
+            button_surf = pygame.Surface((280, 70), pygame.SRCALPHA)
+            for i in range(70):
+                # Calculate gradient color
+                ratio = i / 70
+                r = int(40 + ratio * 10)
+                g = int(40 + ratio * 10)
+                b = int(60 + ratio * 10)
+                color = (r, g, b, 255)
+                pygame.draw.line(button_surf, color, (0, i), (280, i))
+
+            # Apply rounded corners to button
+            pygame.draw.rect(button_surf, (0, 0, 0, 0), (0, 0, 280, 70), border_radius=35)
+            screen.blit(button_surf, restart_rect)
+
+            # Button border with glow
+            pygame.draw.rect(screen, TERTIARY_ACCENT, restart_rect, width=3, border_radius=35)
+
+            # Button text with icon
+            restart_text = FONT_MEDIUM.render("⚡ Next Battle", True, UI_TEXT)
+            restart_rect2 = restart_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 165))
             screen.blit(restart_text, restart_rect2)
+
+            # Add subtle pulsing effect to button
+            pulse = (math.sin(time.time() * 3) + 1) / 2  # 0 to 1 pulsing
+            glow_size = int(5 + pulse * 5)
+            glow_surf = pygame.Surface((restart_rect.width + glow_size*2, restart_rect.height + glow_size*2), pygame.SRCALPHA)
+            glow_alpha = int(40 + pulse * 40)
+            glow_color = (*TERTIARY_ACCENT[:3], glow_alpha)
+            pygame.draw.rect(
+                glow_surf,
+                glow_color,
+                (0, 0, restart_rect.width + glow_size*2, restart_rect.height + glow_size*2),
+                border_radius=35 + glow_size
+            )
+            screen.blit(glow_surf, (restart_rect.x - glow_size, restart_rect.y - glow_size))
 
 
 def get_valid_moves():
@@ -601,17 +687,17 @@ def make_move(row, col, player):
     piece_x = BOARD_MARGIN_LEFT + col * CELL_SIZE + CELL_SIZE // 2
     piece_y = BOARD_MARGIN_TOP + row * CELL_SIZE + CELL_SIZE // 2
     color = PLAYER1_COLOR if player == 1 else PLAYER2_COLOR
-    create_particles(piece_x, piece_y, color, count=30)
+    create_particles(piece_x, piece_y, color, count=35)  # More particles
 
     # Flash effect
-    flash_alpha = 70
+    flash_alpha = 80  # Slightly stronger flash
 
     # Play sound
     if place_sound:
         place_sound.play()
 
     # Add message
-    messages.append(Message(f"🎮 {llm_names[player]} placed at ({row}, {col})", 
+    messages.append(Message(f"🎮 {llm_names[player]} placed at ({row}, {col})",
                            PLAYER1_COLOR if player == 1 else PLAYER2_COLOR))
 
     # Capture adjacent pieces
@@ -627,12 +713,12 @@ def make_move(row, col, player):
             # Create capture particles
             cap_x = BOARD_MARGIN_LEFT + c * CELL_SIZE + CELL_SIZE // 2
             cap_y = BOARD_MARGIN_TOP + r * CELL_SIZE + CELL_SIZE // 2
-            create_particles(cap_x, cap_y, color, count=15)
+            create_particles(cap_x, cap_y, color, count=20)  # More particles
 
     # Play capture sound if captures happened
     if captures > 0 and capture_sound:
         capture_sound.play()
-        messages.append(Message(f"⚔️ {llm_names[player]} captured {captures} pieces!", 
+        messages.append(Message(f"⚔️ {llm_names[player]} captured {captures} pieces!",
                                PLAYER1_COLOR if player == 1 else PLAYER2_COLOR))
 
 
@@ -662,27 +748,52 @@ def reset_game():
     messages.append(Message(f"🎮 Battle {current_game}/{total_games} Started!", TERTIARY_ACCENT, size="large"))
     messages.append(Message(f"{llm_names[1]} vs {llm_names[2]}", UI_TEXT))
 
+
 def draw_background_gradient():
     """Draw a cooler gradient background with stars."""
     # Create background gradient
     bg_surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-    # Gradient from darker at top to slightly lighter at bottom
+    # Enhanced gradient from darker at top to slightly lighter at bottom
     for y in range(SCREEN_HEIGHT):
         ratio = y / SCREEN_HEIGHT
-        r = int(15 + ratio * 8)
-        g = int(15 + ratio * 8)
-        b = int(25 + ratio * 10)
+        r = int(12 + ratio * 10)
+        g = int(12 + ratio * 10)
+        b = int(20 + ratio * 15)
         pygame.draw.line(bg_surf, (r, g, b), (0, y), (SCREEN_WIDTH, y))
 
-    # Add stars with different sizes/brightness
-    for _ in range(100):
+    # Add more stars with different sizes/brightness for depth
+    for _ in range(150):  # More stars
         x = random.randint(0, SCREEN_WIDTH)
         y = random.randint(0, SCREEN_HEIGHT)
-        size = random.randint(1, 3)
-        brightness = random.randint(120, 255)
+        size = random.randint(1, 4)  # Larger stars
+        brightness = random.randint(130, 255)
         color = (brightness, brightness, brightness)
         pygame.draw.circle(bg_surf, color, (x, y), size)
+
+        # Add glow to some stars
+        if random.random() < 0.3:  # 30% of stars get glow
+            glow_size = size * 2
+            glow_alpha = 50
+            glow_surf = pygame.Surface((glow_size*2, glow_size*2), pygame.SRCALPHA)
+            glow_color = (brightness, brightness, brightness, glow_alpha)
+            pygame.draw.circle(glow_surf, glow_color, (glow_size, glow_size), glow_size)
+            bg_surf.blit(glow_surf, (x-glow_size, y-glow_size))
+
+    # Add subtle nebula-like effects in the background
+    for _ in range(5):
+        nebula_x = random.randint(0, SCREEN_WIDTH)
+        nebula_y = random.randint(0, SCREEN_HEIGHT)
+        nebula_size = random.randint(100, 300)
+        nebula_color = random.choice([
+            (30, 0, 50, 10),  # Purple
+            (0, 20, 40, 10),  # Blue
+            (40, 0, 40, 10),  # Magenta
+        ])
+
+        nebula_surf = pygame.Surface((nebula_size*2, nebula_size*2), pygame.SRCALPHA)
+        pygame.draw.circle(nebula_surf, nebula_color, (nebula_size, nebula_size), nebula_size)
+        bg_surf.blit(nebula_surf, (nebula_x-nebula_size, nebula_y-nebula_size))
 
     # Blit the background
     screen.blit(bg_surf, (0, 0))
@@ -713,12 +824,12 @@ def check_game_over():
 
         battle_stats["games"] += 1
 
-        # Create victory particles
-        for _ in range(10):
+        # Create victory particles - more particles and across the screen
+        for _ in range(20):  # More particles
             x = random.randint(0, SCREEN_WIDTH)
             y = random.randint(0, SCREEN_HEIGHT // 2)
             color = PLAYER1_COLOR if winner == 1 else PLAYER2_COLOR if winner == 2 else TERTIARY_ACCENT
-            create_particles(x, y, color, count=20)
+            create_particles(x, y, color, count=30)
 
         # Play game over sound
         if game_over_sound:
@@ -793,10 +904,10 @@ async def run_game_loop(get_llm_move_func):
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and game_over and not auto_restart:
                 # Check if restart button was clicked
                 restart_rect = pygame.Rect(
-                    (SCREEN_WIDTH - 220)//2,
-                    (SCREEN_HEIGHT)//2 + 110,
-                    220,
-                    60
+                    (SCREEN_WIDTH - 280)//2,
+                    (SCREEN_HEIGHT)//2 + 130,
+                    280,
+                    70
                 )
                 if restart_rect.collidepoint(event.pos):
                     current_game += 1

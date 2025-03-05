@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from typing import Dict, List, Any, Optional
 from dotenv import load_dotenv
+from datetime import datetime
 
 
 def load_env_variables():
@@ -30,6 +31,18 @@ def load_env_variables():
 
     if not groq_key and not google_key:
         print("No API keys found. Consider using run_battle_demo.py instead.")
+
+
+def convert_numpy(obj):
+    """Convert numpy arrays to lists recursively."""
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, dict):
+        return {k: convert_numpy(v) for k, v in obj.items()}
+    elif isinstance(obj, list) or isinstance(obj, tuple):
+        return [convert_numpy(i) for i in obj]
+    else:
+        return obj
 
 
 def save_game_record(
@@ -68,9 +81,12 @@ def save_game_record(
         "moves_history": moves_history
     }
 
+    # Convert any NumPy arrays to lists before saving
+    record_converted = convert_numpy(record)
+
     filename = os.path.join(output_dir, f"game_{game_id}.json")
     with open(filename, "w") as f:
-        json.dump(record, f, indent=2)
+        json.dump(record_converted, f, indent=2)
 
     return filename
 
