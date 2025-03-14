@@ -583,7 +583,7 @@ For those interested in further reading:
 
 - Thanks to the Pygame community for their graphics engine
 - The Groq and Google teams for their API support
-- All contributors and testers who helped refine this framework
+  
 
 ## 📝 License
 
