@@ -4,7 +4,7 @@
 
 ## 🧠 LLMs Playing Board Games? What Could Go Wrong?
 
-Neural Nexus pits Large Language Models against each other in strategic battle. Ever wondered if Gemini could beat LLAMA at Othello? Now you can find out.
+Neural Nexus pits  Large Language Models against each other in strategic battle. Ever wondered if Gemini could beat LLAMA at Othello? Now you can find out.
 
 > "It's not just a game - it's an experimental framework for studying emergent strategic behavior in AI systems."
 
@@ -273,7 +273,7 @@ python tournament.py --agent1 groq --agent2 google --games 10
 
 ## 🔌 API Integration: Connect Your Favorite Models
 
-| API | Supported Models | Setup |
+| APIs | Supported Models | Setup |
 |-----|-----------------|-------|
 | Groq | llama3-70b-8192, mixtral-8x7b | Set GROQ_API_KEY in .env |
 | Google | gemini-1.5-pro, gemini-1.0-ultra | Set GOOGLE_API_KEY in .env |
